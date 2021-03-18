@@ -1,0 +1,31 @@
+language: node_js
+
+node_js:
+- 14
+
+branches:
+  only:
+  - master
+
+before_script:
+- yarn
+
+script:
+- yarn lint
+- yarn build
+
+addons:
+  ssh_known_hosts: $domain
+
+before_deploy:
+- openssl aes-256-cbc -K $encrypted_xxxxxxxxxxxx_key -iv $encrypted_xxxxxxxxxxxx_iv -in $id_rsa_private_name.enc -out /tmp/$id_rsa_private_name -d
+- eval "$(ssh-agent -s)"
+- chmod 600 /tmp/$id_rsa_private_name
+- ssh-add /tmp/$id_rsa_private_name
+
+deploy:
+  provider: script
+  skip_cleanup: true
+  script: sh scripts/deploy.local.sh
+  on:
+    branch: master
